@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthProvider {
+  CREDENTIALS
+  PHONE_NUMBER
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+  DISABLED
+}
+
+model user {
+  id                 String               @id @default(uuid())
+  name               String?
+  email              String?              @unique
+  phone_number       String?              @unique
+  hashed_password    String?
+  is_email_verified  Boolean              @default(false)
+  email_verified_at  DateTime?
+  image_url          String               @default("https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png?20170328184010")
+  initial_ip         String
+  sessions           session[]
+  provider           AuthProvider         @default(CREDENTIALS)
+  status             UserStatus           @default(ACTIVE)
+  status_changed_at  DateTime?
+  is_deleted         Boolean              @default(false)
+  deleted_at         DateTime?
+  created_at         DateTime             @default(now())
+  updated_at         DateTime             @updatedAt
+  last_login_at      DateTime?
+  verification_token verification_token[]
+
+  @@index([email])
+  @@index([status])
+  @@index([is_email_verified])
+}
+
+enum Client {
+  WEB
+}
+
+model session {
+  id          String   @id @default(uuid())
+  ip          String
+  user_agent  String
+  client_type Client   @default(WEB)
+  user_id     String
+  user        user     @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  created_at  DateTime @default(now())
+  expires_at  DateTime
+  updated_at  DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([ip])
+  @@index([expires_at])
+}
+
+enum VerificationTokenScope {
+  PASSWORD
+  VERIFICATION
+  EDIT
+  MFA
+}
+
+model verification_token {
+  id         String                 @id @default(uuid())
+  ip         String
+  code       String //this can be 4-6 digit or uuid depending on use case also it can be editied server only 
+  scope      VerificationTokenScope @default(VERIFICATION)
+  user_agent String
+  user_id    String
+  user       user                   @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  created_at DateTime               @default(now())
+  expires_at DateTime
+  updated_at DateTime               @updatedAt
+}
