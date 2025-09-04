@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUser } from './services/create-user.service';
 import { UserMetaData } from 'src/utils/types/user-metadata';
@@ -16,6 +16,12 @@ import { DisableMfaDto } from './dto/disable-mfa/disable-mfa.token';
 import { DisableMfa } from './services/disable-mfa.service';
 import { ResendEmailVerificationToken } from './services/resend-verification-token.service';
 import { ResendTokenDto } from './dto/verify-token/resend-token.dto';
+import { EditUserBasicInfoDto } from './dto/edit-user/edit-user-basic-info.dto';
+import { editUserBasicInfo } from './services/edit-user-baisc-info.service';
+import { EditUserEmail } from './services/edit-user-email.service';
+import { EditUserEmailDto } from './dto/edit-user/edit-email.dto';
+import { LogoutAllSessions, LogoutCurrentSession } from './services/logout-session.service';
+import { GetUserInfoBySession } from './services/get-user-info.service';
 
 @Injectable()
 export class AuthUsersService {
@@ -51,9 +57,34 @@ export class AuthUsersService {
         return EnabledMfa(this.prisma,session.session_id,session.user_id)
     }
     async DisableUserMfa(session:UserSessionToken,metadata:UserMetaData,data:DisableMfaDto){
+         const isValidSession =await this.prisma.session.findUnique({
+            where:{id:session.session_id,expires_at:{gt:new Date()}},
+            select:{id:true}
+        })
+        if(!isValidSession) throw new UnauthorizedException()
         return DisableMfa(this.prisma,session.user_id,metadata,data)
     }
     async ResendEmailVerificationMail(metadata:UserMetaData,data:ResendTokenDto){
         return ResendEmailVerificationToken(this.prisma,metadata,data.tokenId,data.userId,data.email)
+    }
+    async EditUserBasicInfo(usedId:string,data:EditUserBasicInfoDto,session:UserSessionToken){
+        const isValidSession =await this.prisma.session.findUnique({
+            where:{id:session.session_id,expires_at:{gt:new Date()}},
+            select:{id:true}
+        })
+        if(!isValidSession) throw new UnauthorizedException()
+        return editUserBasicInfo(this.prisma,usedId,data)
+    }
+    async EditUserEmailInfo(metadata:UserMetaData,data:EditUserEmailDto,session:UserSessionToken){
+        return EditUserEmail(this.prisma,metadata,data,session)
+    }
+    async LogoutUser(session:UserSessionToken){
+        return LogoutCurrentSession(this.prisma,session)
+    }
+    async LogoutAll(session:UserSessionToken){
+        return LogoutAllSessions(this.prisma,session)
+    }
+    async GetSessionInfo(session:UserSessionToken){
+        return GetUserInfoBySession(this.prisma,session.session_id)
     }
 }

@@ -10,7 +10,8 @@ export const GetUserById = async(prisma:PrismaClient,id:string)=>{
 
     const exiting_user =  await prisma.user.findUnique({
         where:{
-             id
+             id,
+            status:{not:'BANNED'}
         }
     });
     if(exiting_user){
