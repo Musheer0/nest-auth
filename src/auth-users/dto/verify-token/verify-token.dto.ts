@@ -1,10 +1,9 @@
-import { IsString, IsUUID, MaxLength, MinLength } from "class-validator";
+import { IsString, IsUUID, Length, MaxLength, MinLength } from "class-validator";
 
 export class VerifyTokenDto {
 
     @IsString()
-    @MaxLength(6)
-    @MinLength(6)
+    @Length(6, 6, { message: 'Code must be exactly 6 characters long' })
     code:string
 
     @IsString()

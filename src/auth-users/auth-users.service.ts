@@ -12,6 +12,8 @@ import { CrendentialsSignIn } from './services/credentials-signin.service';
 import { CreateCredentialsJwtToken } from 'src/utils/others/create-jwt-token';
 import { UserSessionToken } from 'src/utils/types/user-session-token';
 import { EnabledMfa } from './services/enable-mfa.service';
+import { DisableMfaDto } from './dto/disable-mfa/disable-mfa.token';
+import { DisableMfa } from './services/disable-mfa.service';
 
 @Injectable()
 export class AuthUsersService {
@@ -45,5 +47,8 @@ export class AuthUsersService {
     }
     async EnableUserMfa(session:UserSessionToken){
         return EnabledMfa(this.prisma,session.session_id,session.user_id)
+    }
+    async DisableUserMfa(session:UserSessionToken,metadata:UserMetaData,data:DisableMfaDto){
+        return DisableMfa(this.prisma,session.user_id,metadata,data)
     }
 }

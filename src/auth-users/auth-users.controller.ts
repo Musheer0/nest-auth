@@ -9,6 +9,7 @@ import { PublicOnlyGuard } from './guards/public-only.guard';
 import { PrivateOnlyGuard } from './guards/private-only.guard';
 import { JWTGuard } from './guards/jwt-auth.guard';
 import { UserSessionToken } from 'src/utils/types/user-session-token';
+import { DisableMfaDto } from './dto/disable-mfa/disable-mfa.token';
 
 @Controller('api/auth')
 export class AuthUsersController {
@@ -32,9 +33,15 @@ export class AuthUsersController {
     }
     @UseGuards(JWTGuard)
     @Post('/enable/mfa')
-    async Test(@Request() req,){
+    async EnableMfa(@Request() req,){
       const session:UserSessionToken = req['user']
       return this.AuthService.EnableUserMfa(session)
+    }
+    @UseGuards(JWTGuard)
+    @Post('/disable/mfa')
+    async DisableMfa(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:DisableMfaDto,){
+      const session:UserSessionToken = req['user']
+      return this.AuthService.DisableUserMfa(session,metadata,data)
     }
     
 }
