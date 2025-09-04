@@ -5,11 +5,13 @@ import { UserMetaData } from 'src/utils/types/user-metadata';
 import { SignUpEmailDto } from './dto/sign-up/sign-up-email.dto';
 import { VerifyTokenDto } from './dto/verify-token/verify-token.dto';
 import { VerifyUserEmailAndLogin } from './services/verifiy-user-email.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthUsersService {
     constructor(
-        private prisma:PrismaService
+        private prisma:PrismaService,
+        private jwtService:JwtService
         
     ){}
 
@@ -20,6 +22,15 @@ export class AuthUsersService {
     }
     async VerifyUserEmail(metadata:UserMetaData,data:VerifyTokenDto){
         const session = await VerifyUserEmailAndLogin(this.prisma,data.userId,data.tokenId,data.code,metadata);
-        
+        const jwt_payload = {
+            session_id:session.id,
+            used_id:session.user_id,
+            expires_at:session.expires_at
+        };
+        const jwtToken = this.jwtService.sign(jwt_payload)
+        return {
+            success:true,
+            token:jwtToken
+        }
     }
 }

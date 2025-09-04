@@ -1,5 +1,6 @@
 import { PrismaClient, user } from "@prisma/client"
 import { redis } from "src/utils/others/redis";
+import { cacheUser } from "src/utils/redis/cache-user";
 
 export const GetUserByEmail = async(prisma:PrismaClient,email:string)=>{
     const cache:user|null = await redis.get(email)
@@ -13,8 +14,7 @@ export const GetUserByEmail = async(prisma:PrismaClient,email:string)=>{
         }
     });
     if(exiting_user){
-        await redis.set(email,exiting_user,{ex:24*60*60})
-        await redis.set(exiting_user?.id,exiting_user,{ex:24*60*60})
+        await cacheUser(exiting_user)
         return exiting_user
     }
     return null

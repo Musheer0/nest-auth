@@ -24,7 +24,7 @@ export const  CreateUser = async(prisma:PrismaClient, data:SignUpEmailDto, metad
             id:true
         }
     });
-    const secret = GenerateOtpSecret()
+    const secret =await GenerateOtpSecret()
     console.log(secret)
     //TODO SEND EMAIL TO USER
     //TODO CREATE EMAIL SERVICE(EXPRESS)

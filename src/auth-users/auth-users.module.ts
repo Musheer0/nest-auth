@@ -7,7 +7,7 @@ import { JwtStrategy } from './strategy/jwt-strategy';
 import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  providers: [AuthUsersService],
+  providers: [AuthUsersService,JwtStrategy],
   controllers: [AuthUsersController],
   imports:[PrismaModule,
     JwtModule.registerAsync({
@@ -17,7 +17,8 @@ import { PassportModule } from '@nestjs/passport';
           expiresIn:'14d'
         }
       })
-    })
+    }),
+    PassportModule
 
   ],
   exports:[

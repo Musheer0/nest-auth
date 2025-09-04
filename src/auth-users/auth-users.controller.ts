@@ -3,6 +3,7 @@ import { SignUpEmailDto } from './dto/sign-up/sign-up-email.dto';
 import { GetUserMetaData } from 'src/decorators/get-user-metadata';
 import { UserMetaData } from 'src/utils/types/user-metadata';
 import { AuthUsersService } from './auth-users.service';
+import { VerifyTokenDto } from './dto/verify-token/verify-token.dto';
 
 @Controller('api/auth')
 export class AuthUsersController {
@@ -13,4 +14,10 @@ export class AuthUsersController {
     async SignUpUser(@Body() data:SignUpEmailDto,@GetUserMetaData() metadata:UserMetaData){
        return this.AuthService.SignUpWithEmail(metadata,data)
     }
+    
+    @Post('/verify/email')
+    async VerifyUser(@Body() data:VerifyTokenDto,@GetUserMetaData() metadata:UserMetaData){
+       return this.AuthService.VerifyUserEmail(metadata,data)
+    }
+    
 }
