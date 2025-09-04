@@ -80,7 +80,7 @@ enum VerificationTokenScope {
 model verification_token {
   id         String                 @id @default(uuid())
   ip         String
-  code       String //this can be 4-6 digit or uuid depending on use case also it can be editied server only 
+  secret     String
   scope      VerificationTokenScope @default(VERIFICATION)
   user_agent String
   user_id    String
