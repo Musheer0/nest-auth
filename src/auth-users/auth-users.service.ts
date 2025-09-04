@@ -10,6 +10,8 @@ import { GetJwtPayloadFromSession } from 'src/utils/others/get-jwt-payload-from-
 import { CredentialsSignInDto } from './dto/sign-in/credentials-sign-in.dto';
 import { CrendentialsSignIn } from './services/credentials-signin.service';
 import { CreateCredentialsJwtToken } from 'src/utils/others/create-jwt-token';
+import { UserSessionToken } from 'src/utils/types/user-session-token';
+import { EnabledMfa } from './services/enable-mfa.service';
 
 @Injectable()
 export class AuthUsersService {
@@ -36,5 +38,8 @@ export class AuthUsersService {
         }
         const jwt_payload =await GetJwtPayloadFromSession(response.session)
         return CreateCredentialsJwtToken(this.jwtService,jwt_payload)
+    }
+    async EnableUserMfa(session:UserSessionToken){
+        return EnabledMfa(this.prisma,session.session_id,session.user_id)
     }
 }
