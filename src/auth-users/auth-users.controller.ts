@@ -10,7 +10,6 @@ import { PrivateOnlyGuard } from './guards/private-only.guard';
 import { JWTGuard } from './guards/jwt-auth.guard';
 import { UserSessionToken } from 'src/utils/types/user-session-token';
 
-@UseGuards(JWTGuard)
 @Controller('api/auth')
 export class AuthUsersController {
     constructor(
@@ -31,7 +30,7 @@ export class AuthUsersController {
     async CredentialsSigin(@Body() data:CredentialsSignInDto,@GetUserMetaData() metadata:UserMetaData){
        return this.AuthService.CredentialsUserSign(metadata,data)
     }
-    @UseGuards(PrivateOnlyGuard)
+    @UseGuards(JWTGuard)
     @Post('/enable/mfa')
     async Test(@Request() req,){
       const session:UserSessionToken = req['user']

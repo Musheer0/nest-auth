@@ -3,10 +3,14 @@ import { CredentialsSignInDto } from "../dto/sign-in/credentials-sign-in.dto";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { verify } from "argon2";
 import { UserMetaData } from "src/utils/types/user-metadata";
-import { fifteenDaysFromNow } from "src/utils/others/date-utils";
+import { fifteenDaysFromNow, fifteenMinsFromNow } from "src/utils/others/date-utils";
 import { cacheUser } from "src/utils/redis/cache-user";
+import { GenerateOtpSecret, Verify } from "src/utils/others/encrypt-secret";
 
 export const CrendentialsSignIn = async(prisma:PrismaClient,data:CredentialsSignInDto,metadata:UserMetaData)=>{
+      if(data?.code?.length<6){
+            throw new BadRequestException("invalid code")
+        }
     const user =await prisma.user.findUnique({
         where:{
             email:data.email
@@ -17,7 +21,7 @@ export const CrendentialsSignIn = async(prisma:PrismaClient,data:CredentialsSign
     const isCorrectPassword = await verify(user.hashed_password,data.password)
     if(!isCorrectPassword)  throw new BadRequestException("invalid credentials")
     //mfa is not yet implemented
-    const isMfaEnabled = false;
+    const isMfaEnabled = user.mfa_enabled
     if(!isMfaEnabled){
      const session = await prisma.session.create({
         data:{
@@ -34,9 +38,53 @@ export const CrendentialsSignIn = async(prisma:PrismaClient,data:CredentialsSign
         mfa_enabled:false
      }
     }
+    if(data.code && data.token ){
+      
+        const mfa_token = await prisma.verification_token.findFirst({
+            where:{
+                user_id:user.id,
+                scope:'MFA',
+                expires_at:{gte:new Date()},
+                id:data.token
+            }
+        });
+        if(!mfa_token) throw new NotFoundException("mfa token not found or expired")
+        const isValid =await Verify(data.code,mfa_token.secret)
+        if(!isValid){
+        throw new BadRequestException("mfa token invalid or expired")
+        }
+        const session = await prisma.session.create({
+        data:{
+            user_id:user.id,
+            ip:metadata.ip,
+            user_agent:metadata.user_agent,
+            expires_at:fifteenDaysFromNow()
+        }
+     });
+     await cacheUser(user)
+     await prisma.verification_token.delete({where:{id:mfa_token.id}})
+     return {
+        session,
+        mfa_token:null,
+        mfa_enabled:false
+     }
+    }
+    const otp_token =await GenerateOtpSecret()
+    //TODO send email
+    console.log(otp_token)
+    const mfa_token = await prisma.verification_token.create({
+        data:{
+            user_id:user.id,
+            ip:metadata.ip,
+            user_agent:metadata.user_agent,
+            secret:otp_token.secret,
+            expires_at:fifteenMinsFromNow(),
+            scope:'MFA'
+        }
+    })
     return {
         session:null,
-          mfa_token:'',
+          mfa_token:mfa_token.id,
         mfa_enabled:true
     }
 }

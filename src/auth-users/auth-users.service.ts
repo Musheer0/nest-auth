@@ -34,7 +34,11 @@ export class AuthUsersService {
     async CredentialsUserSign(metadata:UserMetaData,data:CredentialsSignInDto){
         const response = await CrendentialsSignIn(this.prisma,data,metadata);
         if(response.mfa_enabled || !response.session){
-           throw new InternalServerErrorException("mfa service not available yet") 
+           return {
+            mfa_enabled:true,
+            success:true,
+            mfa_token:response.mfa_token
+           }
         }
         const jwt_payload =await GetJwtPayloadFromSession(response.session)
         return CreateCredentialsJwtToken(this.jwtService,jwt_payload)
