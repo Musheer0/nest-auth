@@ -22,6 +22,7 @@ import { EditUserEmail } from './services/edit-user-email.service';
 import { EditUserEmailDto } from './dto/edit-user/edit-email.dto';
 import { LogoutAllSessions, LogoutCurrentSession } from './services/logout-session.service';
 import { GetUserInfoBySession } from './services/get-user-info.service';
+import { GetSessionById } from 'src/utils/others/get-session';
 
 @Injectable()
 export class AuthUsersService {
@@ -57,10 +58,7 @@ export class AuthUsersService {
         return EnabledMfa(this.prisma,session.session_id,session.user_id)
     }
     async DisableUserMfa(session:UserSessionToken,metadata:UserMetaData,data:DisableMfaDto){
-         const isValidSession =await this.prisma.session.findUnique({
-            where:{id:session.session_id,expires_at:{gt:new Date()}},
-            select:{id:true}
-        })
+         const isValidSession =await GetSessionById(this.prisma,session.session_id,session.user_id)
         if(!isValidSession) throw new UnauthorizedException()
         return DisableMfa(this.prisma,session.user_id,metadata,data)
     }
@@ -68,10 +66,7 @@ export class AuthUsersService {
         return ResendEmailVerificationToken(this.prisma,metadata,data.tokenId,data.userId,data.email)
     }
     async EditUserBasicInfo(usedId:string,data:EditUserBasicInfoDto,session:UserSessionToken){
-        const isValidSession =await this.prisma.session.findUnique({
-            where:{id:session.session_id,expires_at:{gt:new Date()}},
-            select:{id:true}
-        })
+        const isValidSession =await GetSessionById(this.prisma,session.session_id,session.user_id)
         if(!isValidSession) throw new UnauthorizedException()
         return editUserBasicInfo(this.prisma,usedId,data)
     }

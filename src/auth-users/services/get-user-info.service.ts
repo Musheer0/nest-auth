@@ -9,7 +9,7 @@ export const GetUserInfoBySession = async (
 
   // 1️⃣ Fetch session with user
   const session = await prisma.session.findUnique({
-    where: { id: session_id },
+    where: { id: session_id,expires_at:{gt:new Date()} },
     include: { user: true },
   });
 
