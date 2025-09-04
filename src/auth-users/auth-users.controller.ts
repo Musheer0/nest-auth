@@ -6,11 +6,11 @@ import { AuthUsersService } from './auth-users.service';
 import { VerifyTokenDto } from './dto/verify-token/verify-token.dto';
 import { CredentialsSignInDto } from './dto/sign-in/credentials-sign-in.dto';
 import { PublicOnlyGuard } from './guards/public-only.guard';
-import { PrivateOnlyGuard } from './guards/private-only.guard';
 import { JWTGuard } from './guards/jwt-auth.guard';
 import { UserSessionToken } from 'src/utils/types/user-session-token';
 import { DisableMfaDto } from './dto/disable-mfa/disable-mfa.token';
 import { ResendTokenDto } from './dto/verify-token/resend-token.dto';
+import { EditUserBasicInfoDto } from './dto/edit-user/edit-user-basic-info.dto';
 
 @Controller('api/auth')
 export class AuthUsersController {
@@ -49,6 +49,12 @@ export class AuthUsersController {
     async DisableMfa(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:DisableMfaDto,){
       const session:UserSessionToken = req['user']
       return this.AuthService.DisableUserMfa(session,metadata,data)
+    }
+    @UseGuards(JWTGuard)
+    @Post('/edit/basic')
+    async BasicEdit(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:EditUserBasicInfoDto,){
+      const session:UserSessionToken = req['user']
+      return this.AuthService.EditUserBasicInfo(session.user_id,data)
     }
     
 }

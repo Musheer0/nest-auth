@@ -16,6 +16,8 @@ import { DisableMfaDto } from './dto/disable-mfa/disable-mfa.token';
 import { DisableMfa } from './services/disable-mfa.service';
 import { ResendEmailVerificationToken } from './services/resend-verification-token.service';
 import { ResendTokenDto } from './dto/verify-token/resend-token.dto';
+import { EditUserBasicInfoDto } from './dto/edit-user/edit-user-basic-info.dto';
+import { editUserBasicInfo } from './services/edit-user-baisc-info.service';
 
 @Injectable()
 export class AuthUsersService {
@@ -55,5 +57,8 @@ export class AuthUsersService {
     }
     async ResendEmailVerificationMail(metadata:UserMetaData,data:ResendTokenDto){
         return ResendEmailVerificationToken(this.prisma,metadata,data.tokenId,data.userId,data.email)
+    }
+    async EditUserBasicInfo(usedId:string,data:EditUserBasicInfoDto){
+        return editUserBasicInfo(this.prisma,usedId,data)
     }
 }
