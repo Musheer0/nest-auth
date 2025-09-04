@@ -6,3 +6,5 @@
 6 enable /disable mfa route
 7 add mfa to sign in 
 8 send email service
+9 get session info
+10 logout ,logout all

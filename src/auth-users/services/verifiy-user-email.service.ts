@@ -10,7 +10,8 @@ import { cacheUser } from "src/utils/redis/cache-user";
 export const VerifyUserEmailAndLogin = async(prisma:PrismaClient, userId:string,tokenId:string, code:string,metaData:UserMetaData)=>{
     if(!metaData.ip||!metaData.user_agent) throw new BadRequestException("invalid request")
     const user = await prisma.user.findUnique({where:{
-        id:userId
+        id:userId,
+        status:{not:'BANNED'}
     },select:{id:true,is_email_verified:true}})
     if(!user) throw new NotFoundException("invalid code")
     if(user.is_email_verified) throw new BadRequestException("email already verified")
