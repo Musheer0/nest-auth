@@ -1,1 +1,8 @@
 1 connect to prisma ✅
+2 write models
+3 credentials sign up route
+4 credentials sign in route
+5 email verification route
+6 enable /disable mfa route
+7 add mfa to sign in 
+8 send email service
