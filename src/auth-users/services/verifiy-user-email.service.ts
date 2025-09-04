@@ -11,8 +11,9 @@ export const VerifyUserEmailAndLogin = async(prisma:PrismaClient, userId:string,
     if(!metaData.ip||!metaData.user_agent) throw new BadRequestException("invalid request")
     const user = await prisma.user.findUnique({where:{
         id:userId
-    },select:{id:true}})
+    },select:{id:true,is_email_verified:true}})
     if(!user) throw new NotFoundException("invalid code")
+    if(user.is_email_verified) throw new BadRequestException("email already verified")
     const verification_token = await GetVerificationTokenByUserId(
         prisma,
         tokenId,
@@ -20,7 +21,6 @@ export const VerifyUserEmailAndLogin = async(prisma:PrismaClient, userId:string,
     );
     if(!verification_token) throw new NotFoundException("invalid code or code expired");
     if(verification_token.scope!=='VERIFICATION') throw new UnauthorizedException("un-authorized token")
-        console.log(verification_token)
     const isValidToken=await Verify(code,verification_token.secret)
     if(!isValidToken) throw new NotFoundException("invalid code ")
     await prisma.verification_token.delete({where:{id:tokenId}});
@@ -37,6 +37,6 @@ export const VerifyUserEmailAndLogin = async(prisma:PrismaClient, userId:string,
         }
     });
     await cacheUser(updated_user)
-    await redis.set(`user:session:${verification_token.user_id}:${session_token.id}`,session_token);
+    // await redis.set(`user:session:${verification_token.user_id}:${session_token.id}`,session_token,{ex: 24*60*60});
     return session_token
 }

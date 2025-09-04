@@ -6,6 +6,8 @@ import { UserMetaData } from "src/utils/types/user-metadata";
 import { hash } from "argon2";
 import { GenerateOtpSecret } from "src/utils/others/encrypt-secret";
 import { fifteenMinsFromNow } from "src/utils/others/date-utils";
+import { SendEmail } from "src/utils/emails/send-email";
+import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
 
 export const  CreateUser = async(prisma:PrismaClient, data:SignUpEmailDto, metadata:UserMetaData)=>{
     const existing_user = await  GetUserByEmail(prisma,data.email)
@@ -25,9 +27,7 @@ export const  CreateUser = async(prisma:PrismaClient, data:SignUpEmailDto, metad
         }
     });
     const secret =await GenerateOtpSecret()
-    console.log(secret)
-    //TODO SEND EMAIL TO USER
-    //TODO CREATE EMAIL SERVICE(EXPRESS)
+    await SendEmail({to:data.email,html:generateOtpEmail(data.email,secret.token,'Verify your account'),title:'Verify your account'})
     const verification_token = await prisma.verification_token.create({
         data:{
             user_id:new_user.id,
@@ -43,7 +43,7 @@ export const  CreateUser = async(prisma:PrismaClient, data:SignUpEmailDto, metad
     return {
         success:true,
         data: {
-            used_id: new_user.id,
+            user_id: new_user.id,
             token :verification_token.id,
             email_verified:false
         }

@@ -10,6 +10,7 @@ import { PrivateOnlyGuard } from './guards/private-only.guard';
 import { JWTGuard } from './guards/jwt-auth.guard';
 import { UserSessionToken } from 'src/utils/types/user-session-token';
 import { DisableMfaDto } from './dto/disable-mfa/disable-mfa.token';
+import { ResendTokenDto } from './dto/verify-token/resend-token.dto';
 
 @Controller('api/auth')
 export class AuthUsersController {
@@ -21,11 +22,17 @@ export class AuthUsersController {
     async SignUpUser(@Body() data:SignUpEmailDto,@GetUserMetaData() metadata:UserMetaData){
        return this.AuthService.SignUpWithEmail(metadata,data)
     }
-    
+    @UseGuards(PublicOnlyGuard)
     @Post('/verify/email')
     async VerifyUser(@Body() data:VerifyTokenDto,@GetUserMetaData() metadata:UserMetaData){
        return this.AuthService.VerifyUserEmail(metadata,data)
     }
+    @UseGuards(PublicOnlyGuard)
+    @Post('/resend/verify/email')
+    async ResendVerifyEmail(@Body() data:ResendTokenDto,@GetUserMetaData() metadata:UserMetaData){
+       return this.AuthService.ResendEmailVerificationMail(metadata,data)
+    }
+
    @UseGuards(PublicOnlyGuard)
     @Post('/sign-in/email')
     async CredentialsSigin(@Body() data:CredentialsSignInDto,@GetUserMetaData() metadata:UserMetaData){

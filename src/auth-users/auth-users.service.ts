@@ -14,6 +14,8 @@ import { UserSessionToken } from 'src/utils/types/user-session-token';
 import { EnabledMfa } from './services/enable-mfa.service';
 import { DisableMfaDto } from './dto/disable-mfa/disable-mfa.token';
 import { DisableMfa } from './services/disable-mfa.service';
+import { ResendEmailVerificationToken } from './services/resend-verification-token.service';
+import { ResendTokenDto } from './dto/verify-token/resend-token.dto';
 
 @Injectable()
 export class AuthUsersService {
@@ -30,7 +32,7 @@ export class AuthUsersService {
     }
     async VerifyUserEmail(metadata:UserMetaData,data:VerifyTokenDto){
         const session = await VerifyUserEmailAndLogin(this.prisma,data.userId,data.tokenId,data.code,metadata);
-        const jwt_payload = GetJwtPayloadFromSession(session)
+        const jwt_payload = await GetJwtPayloadFromSession(session)
         return CreateCredentialsJwtToken(this.jwtService,jwt_payload)
     }
     async CredentialsUserSign(metadata:UserMetaData,data:CredentialsSignInDto){
@@ -50,5 +52,8 @@ export class AuthUsersService {
     }
     async DisableUserMfa(session:UserSessionToken,metadata:UserMetaData,data:DisableMfaDto){
         return DisableMfa(this.prisma,session.user_id,metadata,data)
+    }
+    async ResendEmailVerificationMail(metadata:UserMetaData,data:ResendTokenDto){
+        return ResendEmailVerificationToken(this.prisma,metadata,data.tokenId,data.userId,data.email)
     }
 }

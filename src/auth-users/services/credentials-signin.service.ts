@@ -6,6 +6,8 @@ import { UserMetaData } from "src/utils/types/user-metadata";
 import { fifteenDaysFromNow, fifteenMinsFromNow } from "src/utils/others/date-utils";
 import { cacheUser } from "src/utils/redis/cache-user";
 import { GenerateOtpSecret, Verify } from "src/utils/others/encrypt-secret";
+import { SendEmail } from "src/utils/emails/send-email";
+import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
 
 export const CrendentialsSignIn = async(prisma:PrismaClient,data:CredentialsSignInDto,metadata:UserMetaData)=>{
       if(data?.code?.length<6){
@@ -20,7 +22,7 @@ export const CrendentialsSignIn = async(prisma:PrismaClient,data:CredentialsSign
     if(!user||!user.hashed_password) throw new BadRequestException("invalid credentials")
     const isCorrectPassword = await verify(user.hashed_password,data.password)
     if(!isCorrectPassword)  throw new BadRequestException("invalid credentials")
-    //mfa is not yet implemented
+    if(!user.is_email_verified) throw new BadRequestException("email not verified")
     const isMfaEnabled = user.mfa_enabled
     if(!isMfaEnabled){
      const session = await prisma.session.create({
@@ -70,8 +72,7 @@ export const CrendentialsSignIn = async(prisma:PrismaClient,data:CredentialsSign
      }
     }
     const otp_token =await GenerateOtpSecret()
-    //TODO send email
-    console.log(otp_token)
+    await SendEmail({to:user.email!,html:generateOtpEmail(user.email!,otp_token.token,'Your MFA token'),title:"Multifaction Authentication"})
     const mfa_token = await prisma.verification_token.create({
         data:{
             user_id:user.id,
