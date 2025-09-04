@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUser } from './services/create-user.service';
 import { UserMetaData } from 'src/utils/types/user-metadata';
@@ -6,6 +6,10 @@ import { SignUpEmailDto } from './dto/sign-up/sign-up-email.dto';
 import { VerifyTokenDto } from './dto/verify-token/verify-token.dto';
 import { VerifyUserEmailAndLogin } from './services/verifiy-user-email.service';
 import { JwtService } from '@nestjs/jwt';
+import { GetJwtPayloadFromSession } from 'src/utils/others/get-jwt-payload-from-session';
+import { CredentialsSignInDto } from './dto/sign-in/credentials-sign-in.dto';
+import { CrendentialsSignIn } from './services/credentials-signin.service';
+import { CreateCredentialsJwtToken } from 'src/utils/others/create-jwt-token';
 
 @Injectable()
 export class AuthUsersService {
@@ -22,15 +26,15 @@ export class AuthUsersService {
     }
     async VerifyUserEmail(metadata:UserMetaData,data:VerifyTokenDto){
         const session = await VerifyUserEmailAndLogin(this.prisma,data.userId,data.tokenId,data.code,metadata);
-        const jwt_payload = {
-            session_id:session.id,
-            used_id:session.user_id,
-            expires_at:session.expires_at
-        };
-        const jwtToken = this.jwtService.sign(jwt_payload)
-        return {
-            success:true,
-            token:jwtToken
+        const jwt_payload = GetJwtPayloadFromSession(session)
+        return CreateCredentialsJwtToken(this.jwtService,jwt_payload)
+    }
+    async CredentialsUserSign(metadata:UserMetaData,data:CredentialsSignInDto){
+        const response = await CrendentialsSignIn(this.prisma,data,metadata);
+        if(response.mfa_enabled || !response.session){
+           throw new InternalServerErrorException("mfa service not available yet") 
         }
+        const jwt_payload =await GetJwtPayloadFromSession(response.session)
+        return CreateCredentialsJwtToken(this.jwtService,jwt_payload)
     }
 }

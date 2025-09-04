@@ -4,6 +4,7 @@ import { GetUserMetaData } from 'src/decorators/get-user-metadata';
 import { UserMetaData } from 'src/utils/types/user-metadata';
 import { AuthUsersService } from './auth-users.service';
 import { VerifyTokenDto } from './dto/verify-token/verify-token.dto';
+import { CredentialsSignInDto } from './dto/sign-in/credentials-sign-in.dto';
 
 @Controller('api/auth')
 export class AuthUsersController {
@@ -18,6 +19,10 @@ export class AuthUsersController {
     @Post('/verify/email')
     async VerifyUser(@Body() data:VerifyTokenDto,@GetUserMetaData() metadata:UserMetaData){
        return this.AuthService.VerifyUserEmail(metadata,data)
+    }
+    @Post('/sign-in/email')
+    async CredentialsSigin(@Body() data:CredentialsSignInDto,@GetUserMetaData() metadata:UserMetaData){
+       return this.AuthService.CredentialsUserSign(metadata,data)
     }
     
 }
