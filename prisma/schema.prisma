@@ -43,6 +43,8 @@ model user {
   created_at         DateTime             @default(now())
   updated_at         DateTime             @updatedAt
   last_login_at      DateTime?
+  mfa_enabled        Boolean              @default(false)
+  mfa_enabled_at     DateTime?             
   verification_token verification_token[]
 
   @@index([email])
@@ -75,6 +77,7 @@ enum VerificationTokenScope {
   VERIFICATION
   EDIT
   MFA
+  MFA_DISABLE
 }
 
 model verification_token {
