@@ -2,7 +2,7 @@
 
 # 🔐 Auth Service (NestJS + Prisma + Redis)
 
-A secure and production-ready **authentication & user management backend** built with **NestJS**, **Prisma**, and **PostgreSQL**, with optional **MFA support**, **session management**, and **rate limiting**.
+A secure and production-ready **authentication & user management backend** built with **NestJS**, **Prisma**, and **PostgreSQL**, with optional **MFA support**, **refresh tokens**, **password reset**, **session management**, and **rate limiting**.
 
 ---
 
@@ -17,10 +17,15 @@ A secure and production-ready **authentication & user management backend** built
   * View active session
   * Logout (single session)
   * Logout from all devices
+* **Refresh Token** endpoint
 * **Edit Profile**
 
   * Basic info (name, profile picture)
   * Change email (with verification)
+* **Password Management**
+
+  * Reset while logged in
+  * Forgot password (reset without being logged in)
 * **Security**
 
   * Throttling / rate limiting
@@ -32,12 +37,12 @@ A secure and production-ready **authentication & user management backend** built
 
 ## 🛠 Tech Stack
 
-* **[NestJS](https://nestjs.com/)** – scalable Node.js framework
-* **[Prisma](https://www.prisma.io/)** – ORM for PostgreSQL
-* **[PostgreSQL](https://www.postgresql.org/)** – relational DB
-* **[Upstash Redis](https://upstash.com/)** – serverless caching (for sessions/tokens)
-* **[class-validator](https://github.com/typestack/class-validator)** – DTO validation
-* **[@nestjs/throttler](https://docs.nestjs.com/security/rate-limiting)** – rate limiting
+* **NestJS** – scalable Node.js framework
+* **Prisma** – ORM for PostgreSQL
+* **PostgreSQL** – relational DB
+* **Upstash Redis** – serverless caching (for sessions/tokens)
+* **class-validator** – DTO validation
+* **@nestjs/throttler** – rate limiting
 
 ---
 
@@ -145,8 +150,6 @@ POST /api/auth/sign-in/email
 POST /api/auth/enable/mfa
 ```
 
-*(Requires JWT token)*
-
 #### 6. **Disable MFA**
 
 ```http
@@ -187,27 +190,65 @@ PATCH /api/auth/edit/email
 }
 ```
 
+#### 9. **Edit Password (Authorized User)**
+
+```http
+PATCH /api/auth/edit/password
+```
+
+```json
+{
+  "email": "john@example.com",
+  "password": "newSecurePassword123",
+  "tokenId": "uuid",
+  "code": "123456"
+}
+```
+
+#### 10. **Forgot Password (Unauthenticated Flow)**
+
+```http
+PATCH /api/auth/forgot/password
+```
+
+```json
+{
+  "email": "john@example.com",
+  "password": "newSecurePassword123",
+  "tokenId": "uuid",
+  "code": "123456"
+}
+```
+
 ---
 
 ### 🧑 Session Management
 
-#### 9. **Get Current Session**
+#### 11. **Get Current Session**
 
 ```http
 POST /api/auth/user/me
 ```
 
-#### 10. **Logout (current session)**
+#### 12. **Logout (current session)**
 
 ```http
 DELETE /api/auth/user/logout
 ```
 
-#### 11. **Logout from All Devices**
+#### 13. **Logout from All Devices**
 
 ```http
 DELETE /api/auth/user/logout-all
 ```
+
+#### 14. **Refresh Token**
+
+```http
+PATCH /api/auth/user/refresh
+```
+
+*(Requires JWT token, refreshes session token)*
 
 ---
 
@@ -256,6 +297,6 @@ npm run test:e2e
 ## 📌 Future Improvements
 
 * Add OAuth (Google, GitHub) providers
-* Add refresh tokens
-* Add password reset flow
+* Add refresh token rotation & blacklist
+* Add password reset email flow
 * Add audit logs for session activity
