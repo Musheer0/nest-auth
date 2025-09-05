@@ -11,6 +11,7 @@ import { cacheUser } from "src/utils/redis/cache-user";
 import { VerificationTokenScope } from "@prisma/client";
 import { verify } from "argon2";
 import { GetUserById } from "./get-user-by-id.service";
+import { redis } from "src/utils/others/redis";
 
 export const EditUserEmail = async (
   prisma: PrismaClient,
@@ -54,6 +55,9 @@ export const EditUserEmail = async (
     });
 
     // Update cache
+    if(user?.email){
+      await redis.del(user.email!)
+    }
     await cacheUser(updatedUser);
 
     // Delete used token
