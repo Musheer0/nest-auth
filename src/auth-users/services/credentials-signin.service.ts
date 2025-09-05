@@ -8,16 +8,13 @@ import { cacheUser } from "src/utils/redis/cache-user";
 import { GenerateOtpSecret, Verify } from "src/utils/others/encrypt-secret";
 import { SendEmail } from "src/utils/emails/send-email";
 import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
+import { GetUserByEmail } from "./get-user-by-email.service";
 
 export const CrendentialsSignIn = async(prisma:PrismaClient,data:CredentialsSignInDto,metadata:UserMetaData)=>{
       if(data?.code?.length<6){
             throw new BadRequestException("invalid code")
         }
-    const user =await prisma.user.findUnique({
-        where:{
-            email:data.email
-        }
-    });
+    const user =await GetUserByEmail(prisma,data.email)
     if(!metadata.ip||!metadata.user_agent) throw new BadRequestException("invalid request")
     if(!user||!user.hashed_password) throw new BadRequestException("invalid credentials")
     const isCorrectPassword = await verify(user.hashed_password,data.password)

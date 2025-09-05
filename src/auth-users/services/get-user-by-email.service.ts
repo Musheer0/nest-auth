@@ -11,7 +11,8 @@ export const GetUserByEmail = async(prisma:PrismaClient,email:string)=>{
     const exiting_user =  await prisma.user.findUnique({
         where:{
             email,
-            status:{not:'BANNED'}
+            status:{not:'BANNED'},
+            is_deleted:false
         }
     });
     if(exiting_user){

@@ -6,13 +6,11 @@ import { UserMetaData } from "src/utils/types/user-metadata";
 import { fifteenDaysFromNow } from "src/utils/others/date-utils";
 import { redis } from "src/utils/others/redis";
 import { cacheUser } from "src/utils/redis/cache-user";
+import { GetUserById } from "./get-user-by-id.service";
 
 export const VerifyUserEmailAndLogin = async(prisma:PrismaClient, userId:string,tokenId:string, code:string,metaData:UserMetaData)=>{
     if(!metaData.ip||!metaData.user_agent) throw new BadRequestException("invalid request")
-    const user = await prisma.user.findUnique({where:{
-        id:userId,
-        status:{not:'BANNED'}
-    },select:{id:true,is_email_verified:true}})
+    const user = await GetUserById(prisma,userId)
     if(!user) throw new NotFoundException("invalid code")
     if(user.is_email_verified) throw new BadRequestException("email already verified")
     const verification_token = await GetVerificationTokenByUserId(
