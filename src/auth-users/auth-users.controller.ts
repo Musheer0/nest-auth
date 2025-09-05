@@ -103,16 +103,16 @@ export class AuthUsersController {
     }
     @Throttle({default:{ttl:60000*60*7,limit:4}})
     @UseGuards(JWTGuard)
-    @Patch('/edit/email')
+    @Patch('/edit/password')
     async ResetPasswordAutorized(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:EditUserPasswordDto,){
       const session:UserSessionToken = req['user']
       return this.AuthService.ResetPassword(session,metadata,data)
     }
     @Throttle({default:{ttl:60000*60*3,limit:4}})
     @UseGuards(JWTGuard)
-    @Patch('/edit/email')
+    @Patch('/forgot/password')
     async ResetUnAuthorizedPasswordAutorized(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:EditUserPasswordDto,){
       const session:UserSessionToken = req['user']
-      return this.AuthService.ResetPassword(session,metadata,data)
+      return this.AuthService.ResetPasswordUnauth(metadata,data)
     }
 }

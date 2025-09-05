@@ -26,6 +26,7 @@ import { GetSessionById } from 'src/utils/others/get-session';
 import { RefreshSession } from './services/refresh-token.service';
 import { ResetUserPassword } from './services/reset-user-password.service';
 import { EditUserPasswordDto } from './dto/edit-user/edit-user-password.dto';
+import { ResetUserPasswordUnauth } from './services/reset-password-unauth.service';
 
 @Injectable()
 export class AuthUsersService {
@@ -92,5 +93,8 @@ export class AuthUsersService {
     }
     async ResetPassword(session:UserSessionToken,metadata:UserMetaData,data:EditUserPasswordDto){
         return ResetUserPassword(this.prisma,metadata,data,session)
+    }
+    async ResetPasswordUnauth(metadata:UserMetaData,data:EditUserPasswordDto){
+        return ResetUserPasswordUnauth(this.prisma,metadata,data)
     }
 }
