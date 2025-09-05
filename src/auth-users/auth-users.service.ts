@@ -23,6 +23,9 @@ import { EditUserEmailDto } from './dto/edit-user/edit-email.dto';
 import { LogoutAllSessions, LogoutCurrentSession } from './services/logout-session.service';
 import { GetUserInfoBySession } from './services/get-user-info.service';
 import { GetSessionById } from 'src/utils/others/get-session';
+import { RefreshSession } from './services/refresh-token.service';
+import { ResetUserPassword } from './services/reset-user-password.service';
+import { EditUserPasswordDto } from './dto/edit-user/edit-user-password.dto';
 
 @Injectable()
 export class AuthUsersService {
@@ -81,5 +84,13 @@ export class AuthUsersService {
     }
     async GetSessionInfo(session:UserSessionToken){
         return GetUserInfoBySession(this.prisma,session.session_id)
+    }
+    async RefreshToken(session:UserSessionToken){
+        const updated_session =await RefreshSession(this.prisma,session);
+        const jwt_payload =await GetJwtPayloadFromSession(updated_session)
+        return CreateCredentialsJwtToken(this.jwtService,jwt_payload)
+    }
+    async ResetPassword(session:UserSessionToken,metadata:UserMetaData,data:EditUserPasswordDto){
+        return ResetUserPassword(this.prisma,metadata,data,session)
     }
 }

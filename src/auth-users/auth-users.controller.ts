@@ -13,6 +13,7 @@ import { ResendTokenDto } from './dto/verify-token/resend-token.dto';
 import { EditUserBasicInfoDto } from './dto/edit-user/edit-user-basic-info.dto';
 import { EditUserEmailDto } from './dto/edit-user/edit-email.dto';
 import { Throttle } from '@nestjs/throttler';
+import { EditUserPasswordDto } from './dto/edit-user/edit-user-password.dto';
 
 @Controller('api/auth')
 export class AuthUsersController {
@@ -92,5 +93,26 @@ export class AuthUsersController {
     async LogoutAll(@Request() req){
       const session:UserSessionToken = req['user']
       return this.AuthService.LogoutAll(session)
+    }
+    @Throttle({default:{ttl:60000*60*24,limit:1}})
+    @UseGuards(JWTGuard)
+    @Patch('/user/refresh')
+    async RefreshToken(@Request() req){
+      const session:UserSessionToken = req['user']
+      return this.AuthService.RefreshToken(session)
+    }
+    @Throttle({default:{ttl:60000*60*7,limit:4}})
+    @UseGuards(JWTGuard)
+    @Patch('/edit/email')
+    async ResetPasswordAutorized(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:EditUserPasswordDto,){
+      const session:UserSessionToken = req['user']
+      return this.AuthService.ResetPassword(session,metadata,data)
+    }
+    @Throttle({default:{ttl:60000*60*3,limit:4}})
+    @UseGuards(JWTGuard)
+    @Patch('/edit/email')
+    async ResetUnAuthorizedPasswordAutorized(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:EditUserPasswordDto,){
+      const session:UserSessionToken = req['user']
+      return this.AuthService.ResetPassword(session,metadata,data)
     }
 }
