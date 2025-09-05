@@ -1,10 +1,23 @@
 1 connect to prisma ✅
-2 write models
-3 credentials sign up route
-4 credentials sign in route
-5 email verification route
-6 enable /disable mfa route
-7 add mfa to sign in 
-8 send email service
-9 get session info
-10 logout ,logout all
+2 write models✅
+3 credentials sign up route✅
+4 credentials sign in route✅
+5 email verification route✅
+6 enable /disable mfa route✅
+7 add mfa to sign in ✅
+8 send email service✅
+9 get session info✅
+10 logout ,logout all✅
+11 rate limiting✅
+12 email change✅
+13 basic user editing✅
+14 password change✅
+---------------------------------------------------------
+15 admin model ✅
+16 admin login
+17 create first admin fromdb
+18 get all users
+19 disable ban user
+20 edit user
+21 force logout user
+22 force logout to un-active users

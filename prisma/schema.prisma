@@ -92,3 +92,34 @@ model verification_token {
   expires_at DateTime
   updated_at DateTime               @updatedAt
 }
+
+enum AdminScope{
+  ADMIN
+  EDITOR
+  VIEW_ONLY
+
+}
+model admin {
+  id         String                 @id @default(uuid())
+  ip         String
+  secret     String
+  scope      AdminScope   @default(VIEW_ONLY)
+  user_agent String
+  user_id    String
+  created_at DateTime               @default(now())
+  expires_at DateTime?
+  verification_tokens admin_verification_token[]
+  updated_at DateTime               @updatedAt
+}
+model admin_verification_token {
+  id         String                 @id @default(uuid())
+  ip         String
+  secret     String
+  scope      VerificationTokenScope @default(VERIFICATION)
+  user_agent String
+  admin_id    String
+  admin       admin                   @relation(references: [id], fields: [admin_id], onDelete: Cascade)
+  created_at DateTime               @default(now())
+  expires_at DateTime
+  updated_at DateTime               @updatedAt
+}
