@@ -10,6 +10,7 @@ import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
 import { cacheUser } from "src/utils/redis/cache-user";
 import { VerificationTokenScope } from "@prisma/client";
 import { verify } from "argon2";
+import { GetUserById } from "./get-user-by-id.service";
 
 export const EditUserEmail = async (
   prisma: PrismaClient,
@@ -25,7 +26,7 @@ export const EditUserEmail = async (
   if (session.expires_at <= new Date()) throw new BadRequestException("Session expired");
 
   // 2️⃣ Fetch user
-  const user = await prisma.user.findUnique({ where: { id: session.user_id } });
+  const user = await GetUserById(prisma,session.user_id)
   if (!user) throw new BadRequestException("User not found");
 
   // 3️⃣ User must have email verified before editing

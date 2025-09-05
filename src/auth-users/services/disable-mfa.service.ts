@@ -6,6 +6,7 @@ import { GenerateOtpSecret } from "src/utils/others/encrypt-secret";
 import { fifteenMinsFromNow } from "src/utils/others/date-utils";
 import { DisableMfaDto } from "../dto/disable-mfa/disable-mfa.token";
 import { UserMetaData } from "src/utils/types/user-metadata";
+import { GetUserById } from "./get-user-by-id.service";
 
 export const DisableMfa = async (
   prisma: PrismaClient,
@@ -15,7 +16,7 @@ export const DisableMfa = async (
 ) => {
     if(!metadata.ip||!metadata.user_agent) throw new BadRequestException("invalid request")
   // 1️⃣ Verify user exists
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await GetUserById(prisma,userId)
   if (!user) throw new NotFoundException("User not found");
   if (!user.mfa_enabled) throw new BadRequestException("MFA is not enabled");
 

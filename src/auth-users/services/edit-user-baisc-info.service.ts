@@ -2,6 +2,7 @@ import { BadRequestException } from "@nestjs/common";
 import { PrismaClient, user } from "@prisma/client";
 import { cacheUser } from "src/utils/redis/cache-user";
 import { EditUserBasicInfoDto } from "../dto/edit-user/edit-user-basic-info.dto";
+import { GetUserById } from "./get-user-by-id.service";
 
 
 export interface EditUserBasicInfoResult {
@@ -24,7 +25,7 @@ export const editUserBasicInfo = async (
   }
 
   // Fetch user
-  const user: user | null = await prisma.user.findUnique({ where: { id: user_id } });
+  const user: user | null = await GetUserById(prisma,user_id)
   if (!user) throw new BadRequestException("User not found");
   if (!user.is_email_verified) throw new BadRequestException("Email not verified. Cannot update info");
 
