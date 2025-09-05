@@ -92,3 +92,10 @@ model verification_token {
   expires_at DateTime
   updated_at DateTime               @updatedAt
 }
+
+enum AdminScope{
+  ADMIN
+  EDITOR
+  VIEW_ONLY
+
+}
