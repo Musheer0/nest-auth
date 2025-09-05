@@ -14,6 +14,8 @@ import { EditUserBasicInfoDto } from './dto/edit-user/edit-user-basic-info.dto';
 import { EditUserEmailDto } from './dto/edit-user/edit-email.dto';
 import { Throttle } from '@nestjs/throttler';
 import { EditUserPasswordDto } from './dto/edit-user/edit-user-password.dto';
+import { UserThrottlerGuard } from './guards/user-rate-limter.guard';
+import { UserEmailThrottlerGuard } from './guards/email-rate-limter.guard';
 
 @Controller('api/auth')
 export class AuthUsersController {
@@ -70,7 +72,7 @@ export class AuthUsersController {
     }   
 
     @Throttle({default:{ttl:60000*30,limit:4}})
-    @UseGuards(JWTGuard)
+@UseGuards(JWTGuard,UserThrottlerGuard)
     @Post('/enable/mfa') 
     async EnableMfa(@Request() req){
         try {
@@ -83,7 +85,7 @@ export class AuthUsersController {
     }
 
     @Throttle({default:{ttl:60000*60,limit:5}})
-    @UseGuards(JWTGuard)
+@UseGuards(JWTGuard,UserThrottlerGuard)
     @Post('/disable/mfa')
     async DisableMfa(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:DisableMfaDto){
         try {
@@ -109,7 +111,7 @@ export class AuthUsersController {
     }
 
     @Throttle({default:{ttl:60000*60*7,limit:5}})
-    @UseGuards(JWTGuard)
+    @UseGuards(JWTGuard,UserThrottlerGuard)
     @Patch('/edit/email')
     async EmailEdit(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:EditUserEmailDto){
         try {
@@ -161,7 +163,7 @@ export class AuthUsersController {
     }
 
     @Throttle({default:{ttl:60000*60*24,limit:1}})
-    @UseGuards(JWTGuard)
+@UseGuards(JWTGuard,UserThrottlerGuard)
     @Patch('/user/refresh')
     async RefreshToken(@Request() req){
         try {
@@ -174,7 +176,7 @@ export class AuthUsersController {
     }
 
     @Throttle({default:{ttl:60000*60*7,limit:5}})
-    @UseGuards(JWTGuard)
+@UseGuards(JWTGuard,UserThrottlerGuard)
     @Patch('/edit/password')
     async ResetPasswordAutorized(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:EditUserPasswordDto){
         try {
@@ -185,9 +187,8 @@ export class AuthUsersController {
             throw error;
         }
     }
-
     @Throttle({default:{ttl:60000*60*3,limit:4}})
-    @UseGuards(JWTGuard)
+    @UseGuards(PublicOnlyGuard,UserEmailThrottlerGuard)
     @Patch('/forgot/password')
     async ResetUnAuthorizedPasswordAutorized(@Request() req,@GetUserMetaData() metadata:UserMetaData,@Body() data:EditUserPasswordDto){
         try {
