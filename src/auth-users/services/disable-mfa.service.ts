@@ -7,6 +7,8 @@ import { fifteenMinsFromNow } from "src/utils/others/date-utils";
 import { DisableMfaDto } from "../dto/disable-mfa/disable-mfa.token";
 import { UserMetaData } from "src/utils/types/user-metadata";
 import { GetUserById } from "./get-user-by-id.service";
+import { SendEmail } from "src/utils/emails/send-email";
+import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
 
 export const DisableMfa = async (
   prisma: PrismaClient,
@@ -34,7 +36,8 @@ export const DisableMfa = async (
       },
     });
     //TODO send email
-    console.log(otp)
+    if(user.email)
+    await SendEmail({to:user.email,html:generateOtpEmail(user.email,otp.token,'Your otp to disable mfa'),title:'Disable mfa'})
     return {
       mfa_token: verificationToken.id,
     };

@@ -9,6 +9,7 @@ import { SendEmail } from "src/utils/emails/send-email";
 import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
 import { cacheUser } from "src/utils/redis/cache-user";
 import { GetUserByEmail } from "./get-user-by-email.service";
+import { generateNotificationEmail } from "src/utils/emails/templates/alert-email-template";
 
 export const ResetUserPasswordUnauth = async (
   prisma: PrismaClient,

@@ -33,7 +33,7 @@ export const EditUserEmail = async (
   if (!user.is_email_verified) throw new BadRequestException("User email not verified");
  // Check if email still free
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing && existing.id !== user.id) throw new BadRequestException("Email already in use");
+    if (existing ) throw new BadRequestException("Email already in use");
   // 4️⃣ If token + code provided → confirm email change
   if (token && code) {
     const vToken = await prisma.verification_token.findFirst({

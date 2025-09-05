@@ -21,7 +21,7 @@ export const VerifyUserEmailAndLogin = async(prisma:PrismaClient, userId:string,
     if(!verification_token) throw new NotFoundException("invalid code or code expired");
     if(verification_token.scope!=='VERIFICATION') throw new UnauthorizedException("un-authorized token")
     const isValidToken=await Verify(code,verification_token.secret)
-    if(!isValidToken) throw new NotFoundException("invalid code ")
+    if(!isValidToken) throw new NotFoundException("wrong code ")
     await prisma.verification_token.delete({where:{id:tokenId}});
     const updated_user = await prisma.user.update({
         where:{id:user.id},

@@ -10,6 +10,7 @@ import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
 import { cacheUser } from "src/utils/redis/cache-user";
 import { hash, verify } from "argon2";
 import { EditUserPasswordDto } from "../dto/edit-user/edit-user-password.dto";
+import { generateNotificationEmail } from "src/utils/emails/templates/alert-email-template";
 
 export const ResetUserPassword = async (
   prisma: PrismaClient,

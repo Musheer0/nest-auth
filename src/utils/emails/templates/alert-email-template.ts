@@ -4,7 +4,7 @@ interface NotificationEmailProps {
   extraInfo?: string; // optional additional info
 }
 
-function generateNotificationEmail({ email, title, extraInfo }: NotificationEmailProps): string {
+export function generateNotificationEmail({ email, title, extraInfo }: NotificationEmailProps): string {
   return `
   <!DOCTYPE html>
   <html lang="en">
