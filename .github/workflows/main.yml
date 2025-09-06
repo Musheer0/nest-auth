@@ -18,7 +18,7 @@ jobs:
           node-version: 20
       - name: install pkgs
         working-directory: .
-        run: npm ci
+        run:  pnpm install --frozen-lockfile
       - name: lint
         working-directory: .
         run: npm run build
