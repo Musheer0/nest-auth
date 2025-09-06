@@ -1,26 +1,27 @@
-import { PrismaClient } from "@prisma/client";
-import { BadRequestException, NotFoundException } from "@nestjs/common";
-import { cacheUser } from "src/utils/redis/cache-user";
-import { verify } from "argon2";
-import { GenerateOtpSecret } from "src/utils/others/encrypt-secret";
-import { fifteenMinsFromNow } from "src/utils/others/date-utils";
-import { DisableMfaDto } from "../dto/disable-mfa/disable-mfa.token";
-import { UserMetaData } from "src/utils/types/user-metadata";
-import { GetUserById } from "./get-user-by-id.service";
-import { SendEmail } from "src/utils/emails/send-email";
-import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
+import { PrismaClient } from '@prisma/client';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { cacheUser } from 'src/utils/redis/cache-user';
+import { verify } from 'argon2';
+import { GenerateOtpSecret } from 'src/utils/others/encrypt-secret';
+import { fifteenMinsFromNow } from 'src/utils/others/date-utils';
+import { DisableMfaDto } from '../dto/disable-mfa/disable-mfa.token';
+import { UserMetaData } from 'src/utils/types/user-metadata';
+import { GetUserById } from './get-user-by-id.service';
+import { SendEmail } from 'src/utils/emails/send-email';
+import { generateOtpEmail } from 'src/utils/emails/templates/otp-template';
 
 export const DisableMfa = async (
   prisma: PrismaClient,
   userId: string,
   metadata: UserMetaData,
-  data?:DisableMfaDto
+  data?: DisableMfaDto,
 ) => {
-    if(!metadata.ip||!metadata.user_agent) throw new BadRequestException("invalid request")
+  if (!metadata.ip || !metadata.user_agent)
+    throw new BadRequestException('invalid request');
   // 1️⃣ Verify user exists
-  const user = await GetUserById(prisma,userId)
-  if (!user) throw new NotFoundException("User not found");
-  if (!user.mfa_enabled) throw new BadRequestException("MFA is not enabled");
+  const user = await GetUserById(prisma, userId);
+  if (!user) throw new NotFoundException('User not found');
+  if (!user.mfa_enabled) throw new BadRequestException('MFA is not enabled');
 
   // 2️⃣ No code submitted → generate MFA disable token
   if (!data?.code) {
@@ -32,12 +33,20 @@ export const DisableMfa = async (
         user_agent: metadata.user_agent,
         secret: otp.secret,
         expires_at: fifteenMinsFromNow(),
-        scope: "MFA_DISABLE",
+        scope: 'MFA_DISABLE',
       },
     });
     //TODO send email
-    if(user.email)
-    await SendEmail({to:user.email,html:generateOtpEmail(user.email,otp.token,'Your otp to disable mfa'),title:'Disable mfa'})
+    if (user.email)
+      await SendEmail({
+        to: user.email,
+        html: generateOtpEmail(
+          user.email,
+          otp.token,
+          'Your otp to disable mfa',
+        ),
+        title: 'Disable mfa',
+      });
     return {
       mfa_token: verificationToken.id,
     };
@@ -47,17 +56,18 @@ export const DisableMfa = async (
   const tokenRecord = await prisma.verification_token.findFirst({
     where: {
       user_id: user.id,
-      scope: "MFA_DISABLE",
+      scope: 'MFA_DISABLE',
       expires_at: { gt: new Date() },
-      id:data.token
+      id: data.token,
     },
-    orderBy: { created_at: "desc" },
+    orderBy: { created_at: 'desc' },
   });
 
-  if (!tokenRecord) throw new NotFoundException("MFA token not found or expired");
+  if (!tokenRecord)
+    throw new NotFoundException('MFA token not found or expired');
 
   const isValid = await verify(tokenRecord.secret, data.code);
-  if (!isValid) throw new BadRequestException("Invalid MFA code");
+  if (!isValid) throw new BadRequestException('Invalid MFA code');
 
   const updatedUser = await prisma.user.update({
     where: { id: user.id },

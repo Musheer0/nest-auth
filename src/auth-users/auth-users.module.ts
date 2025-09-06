@@ -7,24 +7,20 @@ import { JwtStrategy } from './strategy/jwt-strategy';
 import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  providers: [AuthUsersService,JwtStrategy],
+  providers: [AuthUsersService, JwtStrategy],
   controllers: [AuthUsersController],
-  imports:[PrismaModule,
+  imports: [
+    PrismaModule,
     JwtModule.registerAsync({
-      useFactory:async()=>({
-        secret:process.env.AUTH_SECRET||'JWT_SECRET',
-        signOptions:{
-          expiresIn:'14d'
-        }
-      })
+      useFactory: async () => ({
+        secret: process.env.AUTH_SECRET || 'JWT_SECRET',
+        signOptions: {
+          expiresIn: '14d',
+        },
+      }),
     }),
-    PassportModule
-
-  ],
-  exports:[
-    JwtStrategy,
     PassportModule,
-    
-  ]
+  ],
+  exports: [JwtStrategy, PassportModule],
 })
 export class AuthUsersModule {}

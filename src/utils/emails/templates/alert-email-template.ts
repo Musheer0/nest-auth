@@ -4,7 +4,11 @@ interface NotificationEmailProps {
   extraInfo?: string; // optional additional info
 }
 
-export function generateNotificationEmail({ email, title, extraInfo }: NotificationEmailProps): string {
+export function generateNotificationEmail({
+  email,
+  title,
+  extraInfo,
+}: NotificationEmailProps): string {
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -53,7 +57,7 @@ export function generateNotificationEmail({ email, title, extraInfo }: Notificat
       <div class="body">
         <p>Hello <strong>${email}</strong>,</p>
         <p>${title}</p>
-        ${extraInfo ? `<p>${extraInfo}</p>` : ""}
+        ${extraInfo ? `<p>${extraInfo}</p>` : ''}
       </div>
       <div class="footer">
         &copy; ${new Date().getFullYear()} Your Company. All rights reserved.
@@ -63,5 +67,3 @@ export function generateNotificationEmail({ email, title, extraInfo }: Notificat
   </html>
   `;
 }
-
-    

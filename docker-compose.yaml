@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  auth-be:
+    build: .
+    container_name: nestjs-auth
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3001:3001"
+

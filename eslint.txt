@@ -1,0 +1,11 @@
+export default [
+    {
+        files:["**/*.js"],
+        rules:{
+            semi:"error",
+            "no-unused-vars":"warn"
+        }
+    }
+]
+
+lint :eslint , --ext .js,.jsx,.ts,.tsx,

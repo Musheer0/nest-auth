@@ -1,9 +1,8 @@
-import { BadRequestException } from "@nestjs/common";
-import { PrismaClient, user } from "@prisma/client";
-import { cacheUser } from "src/utils/redis/cache-user";
-import { EditUserBasicInfoDto } from "../dto/edit-user/edit-user-basic-info.dto";
-import { GetUserById } from "./get-user-by-id.service";
-
+import { BadRequestException } from '@nestjs/common';
+import { PrismaClient, user } from '@prisma/client';
+import { cacheUser } from 'src/utils/redis/cache-user';
+import { EditUserBasicInfoDto } from '../dto/edit-user/edit-user-basic-info.dto';
+import { GetUserById } from './get-user-by-id.service';
 
 export interface EditUserBasicInfoResult {
   success: true;
@@ -16,18 +15,19 @@ export interface EditUserBasicInfoResult {
 export const editUserBasicInfo = async (
   prisma: PrismaClient,
   user_id: string,
-  data: EditUserBasicInfoDto
+  data: EditUserBasicInfoDto,
 ): Promise<EditUserBasicInfoResult> => {
   const { name, image_url } = data;
 
-  if (!name || name.trim() === "") {
-    throw new BadRequestException("Name cannot be empty");
+  if (!name || name.trim() === '') {
+    throw new BadRequestException('Name cannot be empty');
   }
 
   // Fetch user
-  const user: user | null = await GetUserById(prisma,user_id)
-  if (!user) throw new BadRequestException("User not found");
-  if (!user.is_email_verified) throw new BadRequestException("Email not verified. Cannot update info");
+  const user: user | null = await GetUserById(prisma, user_id);
+  if (!user) throw new BadRequestException('User not found');
+  if (!user.is_email_verified)
+    throw new BadRequestException('Email not verified. Cannot update info');
 
   // Update DB
   const updatedUser: user = await prisma.user.update({

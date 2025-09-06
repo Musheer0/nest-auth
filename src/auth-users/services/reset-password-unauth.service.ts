@@ -1,32 +1,32 @@
-import { PrismaClient, VerificationTokenScope } from "@prisma/client";
-import { UserMetaData } from "src/utils/types/user-metadata";
-import { BadRequestException } from "@nestjs/common";
-import { hash, verify } from "argon2";
-import { EditUserPasswordDto } from "../dto/edit-user/edit-user-password.dto";
-import { GenerateOtpSecret } from "src/utils/others/encrypt-secret";
-import { fifteenMinsFromNow } from "src/utils/others/date-utils";
-import { SendEmail } from "src/utils/emails/send-email";
-import { generateOtpEmail } from "src/utils/emails/templates/otp-template";
-import { cacheUser } from "src/utils/redis/cache-user";
-import { GetUserByEmail } from "./get-user-by-email.service";
-import { generateNotificationEmail } from "src/utils/emails/templates/alert-email-template";
+import { PrismaClient, VerificationTokenScope } from '@prisma/client';
+import { UserMetaData } from 'src/utils/types/user-metadata';
+import { BadRequestException } from '@nestjs/common';
+import { hash, verify } from 'argon2';
+import { EditUserPasswordDto } from '../dto/edit-user/edit-user-password.dto';
+import { GenerateOtpSecret } from 'src/utils/others/encrypt-secret';
+import { fifteenMinsFromNow } from 'src/utils/others/date-utils';
+import { SendEmail } from 'src/utils/emails/send-email';
+import { generateOtpEmail } from 'src/utils/emails/templates/otp-template';
+import { cacheUser } from 'src/utils/redis/cache-user';
+import { GetUserByEmail } from './get-user-by-email.service';
+import { generateNotificationEmail } from 'src/utils/emails/templates/alert-email-template';
 
 export const ResetUserPasswordUnauth = async (
   prisma: PrismaClient,
   metadata: UserMetaData,
-  data: EditUserPasswordDto
+  data: EditUserPasswordDto,
 ) => {
   const { email, password, tokenId, code } = data;
 
   if (!metadata.ip || !metadata.user_agent)
-    throw new BadRequestException("Invalid request");
+    throw new BadRequestException('Invalid request');
 
   // 🚨 Require email
-  if (!email) throw new BadRequestException("Email is required");
+  if (!email) throw new BadRequestException('Email is required');
 
   // 1️⃣ Find user by email
-  const user = await GetUserByEmail(prisma,email)
-  if (!user) throw new BadRequestException("User not found");
+  const user = await GetUserByEmail(prisma, email);
+  if (!user) throw new BadRequestException('User not found');
 
   // 2️⃣ If token + code provided → confirm reset
   if (tokenId && code) {
@@ -38,12 +38,12 @@ export const ResetUserPasswordUnauth = async (
       },
     });
 
-    if (!vToken) throw new BadRequestException("Invalid token");
+    if (!vToken) throw new BadRequestException('Invalid token');
     if (vToken.expires_at <= new Date())
-      throw new BadRequestException("Token expired");
+      throw new BadRequestException('Token expired');
 
     const isValid = await verify(vToken.secret, code);
-    if (!isValid) throw new BadRequestException("Invalid code");
+    if (!isValid) throw new BadRequestException('Invalid code');
 
     // ✅ Update password
     const hashed_password = await hash(password);
@@ -59,17 +59,17 @@ export const ResetUserPasswordUnauth = async (
 
     await cacheUser(updatedUser);
 
-   if(user.email)
-    await SendEmail({
-      to: user.email,
-      html: generateNotificationEmail({
-        email: user.email,
-        title: "Password changed successfully",
-        extraInfo:
-          "Your password was changed. If this wasn’t you, please contact support immediately. All your sessions have been logged out.",
-      }),
-      title: "Password changed successfully",
-    });
+    if (user.email)
+      await SendEmail({
+        to: user.email,
+        html: generateNotificationEmail({
+          email: user.email,
+          title: 'Password changed successfully',
+          extraInfo:
+            'Your password was changed. If this wasn’t you, please contact support immediately. All your sessions have been logged out.',
+        }),
+        title: 'Password changed successfully',
+      });
 
     // delete token
     await prisma.verification_token.delete({ where: { id: vToken.id } });
@@ -93,12 +93,12 @@ export const ResetUserPasswordUnauth = async (
       expires_at: fifteenMinsFromNow(),
     },
   });
-if(user.email)
-  await SendEmail({
-    to: user.email,
-    html: generateOtpEmail(user.email, otp_token.token, "Password reset"),
-    title: "Reset your password",
-  });
+  if (user.email)
+    await SendEmail({
+      to: user.email,
+      html: generateOtpEmail(user.email, otp_token.token, 'Password reset'),
+      title: 'Reset your password',
+    });
 
   return { token: newToken.id, user_id: user.id };
 };

@@ -9,5 +9,5 @@ export class DisableMfaDto {
   @IsOptional()
   @IsString()
   @IsUUID()
-  token:string
+  token: string;
 }

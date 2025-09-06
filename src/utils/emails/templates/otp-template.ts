@@ -1,4 +1,8 @@
-export function generateOtpEmail(email:string, otp:string, title = "Account") {
+export function generateOtpEmail(
+  email: string,
+  otp: string,
+  title = 'Account',
+) {
   return `
   <!DOCTYPE html>
   <html lang="en">
