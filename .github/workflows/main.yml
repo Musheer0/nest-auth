@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
+      - name: install pnpm
+        run: npm i -g pnpm
       - name: install pkgs
         working-directory: .
         run:  pnpm install --frozen-lockfile
